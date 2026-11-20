@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>Budget & To-Do</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💰</text></svg>"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#14213d" />
+    <link rel="apple-touch-icon" href="icon-192.png" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Budget" />
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>Budget & To-Do</h1>
+
+      <div class="tabs" role="tablist">
+        <button
+          role="tab"
+          id="tab-budget"
+          aria-selected="true"
+          onclick="showTab('budget')"
+        >
+          Budget
+        </button>
+        <button
+          role="tab"
+          id="tab-todo"
+          aria-selected="false"
+          onclick="showTab('todo')"
+        >
+          To-do
+        </button>
+      </div>
+      <button
+        id="reminderBox"
+        class="reminder"
+        hidden
+        onclick="showTab('todo')"
+      ></button>
+
+      <!-- BUDGET -->
+      <section id="budget">
+        <div class="summary">
+          <div class="balance">
+            <small>Balance</small><strong id="balance">₱0.00</strong>
+          </div>
+          <div class="stat">
+            <small>Income</small><strong class="in" id="income">₱0.00</strong>
+          </div>
+          <div class="stat">
+            <small>Expenses</small
+            ><strong class="out" id="expenses">₱0.00</strong>
+          </div>
+        </div>
+
+        <form class="card" id="budgetForm">
+          <input
+            id="desc"
+            type="text"
+            placeholder="What was it for? (e.g. Groceries)"
+            maxlength="60"
+          />
+          <div class="row">
+            <input
+              id="amount"
+              type="number"
+              placeholder="Amount (₱)"
+              min="0"
+              step="0.01"
+              inputmode="decimal"
+            />
+            <select id="type" aria-label="Type">
+              <option value="expense">Expense</option>
+              <option value="income">Income</option>
+            </select>
+          </div>
+          <button class="primary" type="submit">Add entry</button>
+          <p class="msg" id="budgetMsg" role="alert"></p>
+        </form>
+
+        <h2>Entries</h2>
+        <div class="card"><ul id="budgetList"></ul></div>
+        <div class="foot">
+          <span id="budgetCount"></span
+          ><button class="link" onclick="clearBudget()">
+            Clear all entries
+          </button>
+        </div>
+      </section>
+
+      <!-- TODO -->
+      <section id="todo" hidden>
+        <form class="card" id="todoForm">
+          <input
+            id="task"
+            type="text"
+            placeholder="Add a task"
+            maxlength="100"
+          />
+          <div class="row">
+            <label class="datefield">
+              Due date
+              <input id="dueDate" type="date" />
+            </label>
+            <button class="primary" type="submit">Add task</button>
+          </div>
+          <p class="msg" id="todoMsg" role="alert"></p>
+        </form>
+
+        <div class="filters" id="filters">
+          <button aria-pressed="true" data-f="all">All</button>
+          <button aria-pressed="false" data-f="active">To do</button>
+          <button aria-pressed="false" data-f="done">Done</button>
+        </div>
+        <div class="card"><ul id="todoList"></ul></div>
+        <div class="foot">
+          <span id="todoCount"></span
+          ><button class="link" onclick="clearDone()">
+            Remove finished tasks
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <script src="script_2.js"></script>
+  </body>
+</html>
