@@ -362,6 +362,8 @@ getElement("budgetForm").addEventListener("submit", function (event) {
 
   const messageBox = getElement("budgetMsg");
 
+    console.log("type:", selectedType, "balance:", calculateTotals().balance); 
+
   if (descriptionText === "" || amountText === "") {
     messageBox.textContent = "Enter a description and an amount.";
 
