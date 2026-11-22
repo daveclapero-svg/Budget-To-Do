@@ -1,4 +1,4 @@
-const CACHE = "budget-todo-v7";
+const CACHE = "budget-todo-v8";
 const FILES = [
   "./",
   "./index.html",
