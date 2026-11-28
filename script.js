@@ -50,9 +50,15 @@ let todoTasks = loadArray("tasks").map((task) => ({
   dueDate: typeof task.dueDate === "string" ? task.dueDate : "",
 }));
 
+// =====================================
+// GLOBAL VARIABLES
+// =====================================
+
+
 let deletedEntries = loadArray("deletedBudget");
 let spendingLimits = loadLimits();
 let currentFilter = "all";
+let selectedSummaryPeriod = "daily";
 let entrySearchText = "";
 let editingEntry = null;
 
@@ -137,7 +143,13 @@ function showTab(tabName) {
 // =====================================
 
 function updateDateLimit() {
-  getElement("dueDate").min = getTodayString();
+  const dateBox = getElement("dueDate");
+
+  if (dateBox === null) {
+    return;
+  }
+
+  dateBox.min = getTodayString();
 }
 
 function getDaysUntil(dateString) {
@@ -205,6 +217,11 @@ function sortTasksByDueDate() {
 
 function updateReminderBox() {
   const reminderBox = getElement("reminderBox");
+
+  if (reminderBox === null) {
+    return;
+  }
+
   let overdueCount = 0;
   let todayCount = 0;
 
@@ -453,6 +470,68 @@ function periodEntries(period) {
   );
 }
 
+function calculatePeriodExpenses(period) {
+  const today = makeDateFromString(getTodayString());
+  let start;
+  let end;
+
+  if (period === "daily") {
+    start = today;
+    end = new Date(today);
+    end.setDate(end.getDate() + 1);
+  } else if (period === "weekly") {
+    start = startOfWeek(today);
+    end = new Date(start);
+    end.setDate(end.getDate() + 7);
+  } else if (period === "monthly") {
+    start = new Date(today.getFullYear(), today.getMonth(), 1);
+    end = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+  } else {
+    return 0;
+  }
+
+  const startString = formatDateString(start);
+  const endString = formatDateString(end);
+
+  return budgetEntries.reduce((total, entry) => {
+    const date = entryISO(entry);
+
+    if (
+      entry.type === "expense" &&
+      date >= startString &&
+      date < endString
+    ) {
+      return total + (Number(entry.amount) || 0);
+    }
+
+    return total;
+  }, 0);
+}
+
+function showSummaryPeriod(period) {
+  selectedSummaryPeriod = period;
+  getElement("expenseTotal").textContent = formatPeso(
+    calculatePeriodExpenses(period),
+  );
+
+  document
+    .querySelectorAll("[data-summary-period]")
+    .forEach((button) => {
+      button.setAttribute(
+        "aria-pressed",
+        String(button.dataset.summaryPeriod === period),
+      );
+    });
+}
+
+getElement("expenseSummaryFilters").addEventListener("click", (event) => {
+  const period = event.target.dataset.summaryPeriod;
+
+  if (period) {
+    showSummaryPeriod(period);
+  }
+});
+
 // =====================================
 // SPENDING LIMITS
 // =====================================
@@ -660,9 +739,15 @@ function drawBudget() {
   const list = getElement("budgetList");
   list.textContent = "";
 
-  if (visibleEntries.length === 0) {
-    list.appendChild(createEmptyRow("No matching entries."));
-  }
+if (visibleEntries.length === 0) {
+  list.appendChild(
+    createEmptyRow(
+      budgetEntries.length === 0
+        ? "No entries yet. Add your first income or expense above."
+        : "No matching entries.",
+    ),
+  );
+}
 
   visibleEntries.forEach((entry) => {
     const item = document.createElement("li");
@@ -721,6 +806,7 @@ function drawBudget() {
     visibleEntries.length +
     (visibleEntries.length === 1 ? " entry shown" : " entries shown");
 
+  showSummaryPeriod(selectedSummaryPeriod);
   drawLimits();
   drawDeletedHistory();
   drawExpenseChart();
@@ -823,19 +909,19 @@ getElement("budgetForm").addEventListener("submit", (event) => {
 function clearBudget() {
   if (budgetEntries.length === 0) return;
 
-  if (
-    confirm(
-      "Move all " +
-        budgetEntries.length +
-        " entries to deleted history?",
-    )
-  ) {
-    budgetEntries.forEach(addToDeleted);
-    budgetEntries = [];
-    saveData("budget", budgetEntries);
-    saveData("deletedBudget", deletedEntries);
-    drawBudget();
-  }
+if (
+  confirm(
+    "Move all " +
+      budgetEntries.length +
+      " entries to deleted history? You can restore them later.",
+  )
+) {
+  budgetEntries.forEach(addToDeleted);
+  budgetEntries = [];
+  saveData("budget", budgetEntries);
+  saveData("deletedBudget", deletedEntries);
+  drawBudget();
+}
 }
 
 // =====================================
