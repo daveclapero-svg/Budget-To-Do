@@ -65,6 +65,9 @@ body {
     sans-serif;
   line-height: 1.5;
 }
+section {
+  margin-bottom: 32px;
+}
 .wrap {
   max-width: 560px;
   margin: 0 auto;
@@ -344,4 +347,17 @@ li.today small,
 li.soon small {
   color: var(--warn);
   font-weight: 600;
+}
+
+.analytics-panel {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+}
+
+#expenseChart {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: 240px;
 }
