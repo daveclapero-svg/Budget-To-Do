@@ -1,4 +1,4 @@
-const CACHE = "budget-todo-v8";
+const CACHE = "budget-todo-v9";
 const FILES = [
   "./",
   "./index.html",
@@ -9,27 +9,54 @@ const FILES = [
   "./icon-512.png",
 ];
 
-// 1. When installed, save all the files
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(FILES)));
+  event.waitUntil(
+    caches
+      .open(CACHE)
+      .then((cache) => cache.addAll(FILES))
+      .then(() => self.skipWaiting()),
+  );
 });
 
-// 2. When a new version takes over, delete old saved files
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches
       .keys()
       .then((keys) =>
         Promise.all(
-          keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)),
+          keys
+            .filter((key) => key.startsWith("budget-todo-") && key !== CACHE)
+            .map((key) => caches.delete(key)),
         ),
-      ),
+      )
+      .then(() => self.clients.claim()),
   );
 });
 
-// 3. For every request, use the saved copy first, then the network
 self.addEventListener("fetch", (event) => {
+  const request = event.request;
+  const url = new URL(request.url);
+
+  if (request.method !== "GET" || url.origin !== self.location.origin) {
+    return;
+  }
+
   event.respondWith(
-    caches.match(event.request).then((saved) => saved || fetch(event.request)),
+    caches.open(CACHE).then((cache) =>
+      cache.match(request).then((saved) => {
+        if (saved) return saved;
+
+        return fetch(request).catch((error) => {
+          if (request.mode === "navigate") {
+            return cache.match("./index.html").then((offlinePage) => {
+              if (offlinePage) return offlinePage;
+              throw error;
+            });
+          }
+
+          throw error;
+        });
+      }),
+    ),
   );
 });
